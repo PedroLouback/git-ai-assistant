@@ -24,60 +24,47 @@ function git(command: string, cwd: string): string {
   }
 }
 
-export async function getStagedDiff(): Promise<string> {
-  const cwd = getWorkspaceRoot();
+export async function getStagedDiff(cwd?: string): Promise<string> {
+  const root = cwd ?? getWorkspaceRoot();
 
-  // Verifica se é um repo git
   try {
-    git('rev-parse --is-inside-work-tree', cwd);
+    git('rev-parse --is-inside-work-tree', root);
   } catch {
-    throw new Error('No Git repository found in current workspace.');
+    throw new Error(`No Git repository found at: ${root}`);
   }
 
-  // Tenta staged primeiro
-  const staged = git('diff --staged', cwd);
-  if (staged && staged.length > 0) {
-    return staged;
-  }
+  const staged = git('diff --staged', root);
+  if (staged && staged.length > 0) { return staged; }
 
-  // Fallback para unstaged
-  const unstaged = git('diff', cwd);
-  if (unstaged && unstaged.length > 0) {
-    return unstaged;
-  }
+  const unstaged = git('diff', root);
+  if (unstaged && unstaged.length > 0) { return unstaged; }
 
   throw new Error('No changes found. Stage your changes with git add first.');
 }
 
-export async function getCurrentBranch(): Promise<string> {
-  const cwd = getWorkspaceRoot();
+export async function getCurrentBranch(cwd?: string): Promise<string> {
+  const root = cwd ?? getWorkspaceRoot();
   try {
-    return git('rev-parse --abbrev-ref HEAD', cwd);
+    return git('rev-parse --abbrev-ref HEAD', root);
   } catch {
     return 'unknown';
   }
 }
 
-export async function getCommitLog(baseBranch: string): Promise<string> {
-  const cwd = getWorkspaceRoot();
+export async function getCommitLog(baseBranch: string, cwd?: string): Promise<string> {
+  const root = cwd ?? getWorkspaceRoot();
   try {
-    return git(`log ${baseBranch}..HEAD --oneline --no-merges`, cwd);
+    return git(`log ${baseBranch}..HEAD --oneline --no-merges`, root);
   } catch {
     return '';
   }
 }
 
-export async function getPRDiff(baseBranch: string): Promise<string> {
-  const cwd = getWorkspaceRoot();
-
+export async function getPRDiff(baseBranch: string, cwd?: string): Promise<string> {
+  const root = cwd ?? getWorkspaceRoot();
   try {
-    const diff = git(`diff ${baseBranch}...HEAD`, cwd);
-    if (diff && diff.length > 0) {
-      return diff;
-    }
-  } catch {
-    // fallback abaixo
-  }
-
-  return getStagedDiff();
+    const diff = git(`diff ${baseBranch}...HEAD`, root);
+    if (diff && diff.length > 0) { return diff; }
+  } catch { /* fallback */ }
+  return getStagedDiff(root);
 }

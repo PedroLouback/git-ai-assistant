@@ -17,10 +17,11 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
-      {
+       {
         "command": "git-ai-assistant.generateCommitMessage",
         "title": "Git AI: Generate Commit Message",
-        "category": "Git AI"
+        "category": "Git AI",
+        "icon": "$(sparkle)"
       },
       {
         "command": "git-ai-assistant.generatePRDescription",
@@ -36,8 +37,9 @@
     "menus": {
       "scm/title": [
         {
-          "command": "git-ai-assistant.generateCommitMessage",
-          "when": "scmProviderCount > 0"
+        "command": "git-ai-assistant.generateCommitMessage",
+        "group": "navigation",
+        "when": "scmProvider == git"
         },
         {
           "command": "git-ai-assistant.generatePRDescription",
