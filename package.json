@@ -2,7 +2,7 @@
   "name": "gitflare",
   "displayName": "GitFlare",
   "description": "AI-powered commit messages, PR descriptions and code review via OpenRouter",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "PedroLouback",
   "author": {
     "name": "PedroLouback",
@@ -28,7 +28,7 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
-       {
+      {
         "command": "git-ai-assistant.generateCommitMessage",
         "title": "Git AI: Generate Commit Message",
         "category": "Git AI",
@@ -48,9 +48,9 @@
     "menus": {
       "scm/title": [
         {
-        "command": "git-ai-assistant.generateCommitMessage",
-        "group": "navigation",
-        "when": "scmProvider == git"
+          "command": "git-ai-assistant.generateCommitMessage",
+          "group": "navigation",
+          "when": "scmProvider == git"
         },
         {
           "command": "git-ai-assistant.generatePRDescription",
@@ -93,7 +93,10 @@
         },
         "gitAiAssistant.language": {
           "type": "string",
-          "enum": ["en", "pt-BR"],
+          "enum": [
+            "en",
+            "pt-BR"
+          ],
           "default": "en",
           "description": "Language for generated content"
         },
