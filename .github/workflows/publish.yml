@@ -1,0 +1,35 @@
+name: Publish to VS Code Marketplace
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Compile TypeScript
+        run: npm run compile
+
+      - name: Package extension
+        run: npm run package
+
+      - name: Publish to VS Code Marketplace
+        uses: HaaLeo/publish-vscode-extension@v2
+        with:
+          extensionId: PedroLouback.git-ai-assistant
+          extensionFile: git-ai-assistant-*.vsix
+          personalAccessToken: ${{ secrets.VSCE_PAT }}

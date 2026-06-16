@@ -1,8 +1,19 @@
 {
-  "name": "git-ai-assistant",
-  "displayName": "Git AI Assistant",
+  "name": "gitflare",
+  "displayName": "GitFlare",
   "description": "AI-powered commit messages, PR descriptions and code review via OpenRouter",
   "version": "0.0.1",
+  "publisher": "PedroLouback",
+  "author": {
+    "name": "PedroLouback",
+    "url": "https://github.com/PedroLouback"
+  },
+  "license": "MIT",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PedroLouback/git-ai-assistant"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -85,6 +96,11 @@
           "enum": ["en", "pt-BR"],
           "default": "en",
           "description": "Language for generated content"
+        },
+        "gitAiAssistant.useGitHubCLI": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use GitHub CLI (gh) to fetch PR changes for description generation. Requires 'gh' installed and authenticated."
         }
       }
     }

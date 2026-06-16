@@ -5,6 +5,7 @@ export interface ExtensionConfig {
 	model: string;
 	baseBranch: string;
 	language: 'en' | 'pt-BR';
+	useGitHubCLI: boolean;
 }
 
 export function getConfig(): ExtensionConfig {
@@ -13,7 +14,8 @@ export function getConfig(): ExtensionConfig {
 		apiKey: config.get<string>('apiKey') ?? '',
 		model: config.get<string>('model') ?? 'google/gemini-2.0-flash-exp:free',
 		baseBranch: config.get<string>('baseBranch') ?? 'main',
-		language: config.get<'en' | 'pt-BR'>('language') ?? 'en'
+		language: config.get<'en' | 'pt-BR'>('language') ?? 'en',
+		useGitHubCLI: config.get<boolean>('useGitHubCLI') ?? true
 	};
 }
 

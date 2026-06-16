@@ -1,0 +1,116 @@
+name: Bug Report
+description: Report a bug to help us improve Git AI Assistant
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please fill out the form below with as much detail as possible.
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: "When I run X, Y happens instead of Z..."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Step-by-step instructions to reproduce the bug
+      placeholder: |
+        1. Open VS Code with Git AI Assistant installed
+        2. Configure OpenRouter API key
+        3. Run command "Git AI: Generate Commit Message"
+        4. Observe error...
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should have happened?
+      placeholder: "The commit message should be generated and inserted into the SCM input box..."
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened? Include error messages if any.
+      placeholder: "Error message: 'Failed to get staged changes: ...'"
+    validations:
+      required: true
+  - type: input
+    id: vscode-version
+    attributes:
+      label: VS Code Version
+      description: Run `code --version` in terminal
+      placeholder: "1.85.0"
+    validations:
+      required: true
+  - type: input
+    id: extension-version
+    attributes:
+      label: Extension Version
+      description: Check in Extensions panel or package.json
+      placeholder: "0.0.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      options:
+        - Commit Message Generation
+        - PR Description Generation
+        - Code Review
+        - Settings/Configuration
+        - Activation/Startup
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs / Output
+      description: Paste relevant error logs from Developer Tools (Help > Toggle Developer Tools) or Output panel (Git AI Assistant)
+      placeholder: |
+        ```
+        [Error] ...
+        ```
+      render: shell
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other information, configuration, or screenshots that might help
+      placeholder: "My settings: model=..., language=..."
+    validations:
+      required: false
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our Code of Conduct
+      options:
+        - label: I agree to follow the project's Code of Conduct
+          required: true
