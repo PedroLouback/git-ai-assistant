@@ -1,11 +1,41 @@
+# Dependencies
+node_modules/**
+*.ts
+!out/**
+
+# Testing
+src/test/**
+*.test.ts
+
+# Development
 .vscode/**
-.vscode-test/**
-src/**
+*.md
+!README.md
+!README.pt-BR.md
+!CHANGELOG.md
 .gitignore
-.yarnrc
-vsc-extension-quickstart.md
-**/tsconfig.json
-**/eslint.config.mjs
-**/*.map
-**/*.ts
-**/.vscode-test.*
+.github/**
+
+# Source maps and other build artifacts
+*.map
+*.tsbuildinfo
+
+# Environment
+.env
+.env.*
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# NPM
+npm-debug.log*
+.yarn-integrity
+.yarn/**
