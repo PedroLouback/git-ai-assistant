@@ -3,7 +3,7 @@ name: Publish to VS Code Marketplace
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   build-and-publish:
@@ -31,7 +31,7 @@ jobs:
           VSIX=$(ls git-flare-assistant-*.vsix)
           echo "vsix=$VSIX" >> $GITHUB_OUTPUT
       - name: Publish to VS Code Marketplace
-        uses: lannonbr/vsce-action@latest
+        uses: lannonbr/vsce-action@v4.0.0
         with:
           pat: ${{ secrets.VSCE_PAT }}
           packagePath: ${{ steps.package.outputs.vsix }}
