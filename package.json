@@ -2,7 +2,7 @@
   "name": "git-ai-assistant",
   "displayName": "Git AI Assistant",
   "description": "AI-powered commit messages, PR descriptions and code review via OpenRouter",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "PedroLouback",
   "author": {
     "name": "PedroLouback",
