@@ -8,6 +8,8 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # to be able to publish a GitHub release
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,7 +33,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: git-flare-assistant-*.vsix
-          # Use a PAT with repo scope if default GITHUB_TOKEN lacks permissions
-          # token: ${{ secrets.REPO_PAT }}
+          tag_name: ${{ github.ref }}
+          name: Release ${{ github.ref }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
