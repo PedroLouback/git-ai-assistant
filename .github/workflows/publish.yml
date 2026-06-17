@@ -34,6 +34,4 @@ jobs:
         uses: lannonbr/vsce-action@4.0.0
         with:
           entryPoint: vsce
-          args: -i ${{ steps.package.outputs.vsix }}
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          args: publish --packagePath ${{ steps.package.outputs.vsix }} --pat ${{ secrets.VSCE_PAT }}
