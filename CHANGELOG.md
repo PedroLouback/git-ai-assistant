@@ -21,9 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PR description now fetches PR details and diff via `gh pr view` and `gh pr diff`
 - PR description webview shows PR number in title
 - Improved PR description prompt with more context (author, stats, files)
+- Fixed GitHub Actions workflows to correctly publish extension and create releases
 
 ### Configuration
-- New setting: `gitAiAssistant.useGitHubCLI` (default: true) - Enable/disable GitHub CLI for PR descriptions
+- New setting: `gitFlareAssistant.useGitHubCLI` (default: true) - Enable/disable GitHub CLI for PR descriptions
 
 ## [0.0.1] - Initial Release
 

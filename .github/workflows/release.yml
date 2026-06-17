@@ -30,8 +30,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: git-ai-assistant-*.vsix
-          draft: false
-          prerelease: false
+          files: git-flare-assistant-*.vsix
+          # Use a PAT with repo scope if default GITHUB_TOKEN lacks permissions
+          # token: ${{ secrets.REPO_PAT }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
