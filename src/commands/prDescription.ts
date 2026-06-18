@@ -1,8 +1,39 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { getConfig, validateConfig, openSettings, ExtensionConfig } from '../config';
 import { callOpenRouter, OpenRouterMessage } from '../openrouter';
-import { getStagedDiff, getCurrentBranch, ensureGitRepo } from '../gitService';
+import { getStagedDiff, getCurrentBranch, ensureGitRepo, getWorkspaceRoot } from '../gitService';
 import { execSync } from 'child_process';
+
+function getGitAPI(): any {
+  return vscode.extensions.getExtension('vscode.git')?.exports?.getAPI(1);
+}
+
+async function pickRepository(gitAPI: any): Promise<string | undefined> {
+  const repos: any[] = gitAPI?.repositories ?? [];
+
+  if (repos.length === 0) {
+    throw new Error('No Git repositories found in workspace.');
+  }
+
+  if (repos.length === 1) {
+    return repos[0].rootUri.fsPath;
+  }
+
+  const items = repos.map((r: any) => ({
+    label: `$(repo) ${path.basename(r.rootUri.fsPath)}`,
+    description: r.rootUri.fsPath,
+    repoPath: r.rootUri.fsPath,
+    detail: `Branch: ${r.state?.HEAD?.name ?? 'unknown'}`
+  }));
+
+  const picked = await vscode.window.showQuickPick(items, {
+    placeHolder: 'Select repository for PR description',
+    matchOnDescription: true
+  });
+
+  return picked?.repoPath;
+}
 
 interface PRInfo {
 	title: string;
@@ -36,9 +67,10 @@ function getPRNumber(input: string): string | null {
 	return null;
 }
 
-function fetchPRInfo(prNumber: string): PRInfo {
+function fetchPRInfo(prNumber: string, cwd: string): PRInfo {
 	try {
 		const prJson = execSync(`gh pr view ${prNumber} --json title,body,baseRefName,headRefName,author,additions,deletions,files`, {
+			cwd,
 			encoding: 'utf8',
 			stdio: ['pipe', 'pipe', 'pipe']
 		}).trim();
@@ -63,9 +95,10 @@ function fetchPRInfo(prNumber: string): PRInfo {
 	}
 }
 
-function fetchPRDiff(prNumber: string): string {
+function fetchPRDiff(prNumber: string, cwd: string): string {
 	try {
 		return execSync(`gh pr diff ${prNumber}`, {
+			cwd,
 			encoding: 'utf8',
 			stdio: ['pipe', 'pipe', 'pipe']
 		}).trim();
@@ -88,10 +121,17 @@ export async function generatePRDescription(): Promise<void> {
 		return;
 	}
 
+	const gitAPI = getGitAPI();
+	let repoPath: string | undefined;
+
 	try {
-		ensureGitRepo();
+		repoPath = await pickRepository(gitAPI);
 	} catch (err: any) {
 		vscode.window.showErrorMessage(err.message);
+		return;
+	}
+
+	if (!repoPath) {
 		return;
 	}
 
@@ -111,8 +151,8 @@ export async function generatePRDescription(): Promise<void> {
 		return;
 	}
 
-	if (!config.useGitHubCLI) {
-		await generatePRDescriptionLocal(prNumber, config);
+if (!config.useGitHubCLI) {
+		await generatePRDescriptionLocal(prNumber, config, repoPath);
 		return;
 	}
 
@@ -139,7 +179,7 @@ export async function generatePRDescription(): Promise<void> {
 		async () => {
 			let prInfo: PRInfo;
 			try {
-				prInfo = fetchPRInfo(prNumber);
+				prInfo = fetchPRInfo(prNumber, repoPath!);
 			} catch (error) {
 				vscode.window.showErrorMessage(`Failed to fetch PR: ${error instanceof Error ? error.message : String(error)}`);
 				return;
@@ -147,7 +187,7 @@ export async function generatePRDescription(): Promise<void> {
 
 			let diff: string;
 			try {
-				diff = fetchPRDiff(prNumber);
+				diff = fetchPRDiff(prNumber, repoPath!);
 			} catch (error) {
 				vscode.window.showErrorMessage(`Failed to fetch PR diff: ${error instanceof Error ? error.message : String(error)}`);
 				return;
@@ -229,10 +269,10 @@ ${diff}
 	);
 }
 
-async function generatePRDescriptionLocal(prNumber: string, config: ExtensionConfig): Promise<void> {
+async function generatePRDescriptionLocal(prNumber: string, config: ExtensionConfig, repoPath: string): Promise<void> {
 	let diff: string;
 	try {
-		diff = await getStagedDiff();
+		diff = await getStagedDiff(repoPath);
 	} catch (error) {
 		vscode.window.showErrorMessage(`Failed to get changes: ${error instanceof Error ? error.message : String(error)}`);
 		return;
@@ -247,7 +287,7 @@ async function generatePRDescriptionLocal(prNumber: string, config: ExtensionCon
 
 	let currentBranch: string;
 	try {
-		currentBranch = await getCurrentBranch();
+		currentBranch = await getCurrentBranch(repoPath);
 	} catch {
 		currentBranch = 'unknown';
 	}
