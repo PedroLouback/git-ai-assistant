@@ -2,7 +2,7 @@
   "name": "git-flare-assistant",
   "displayName": "GitFlare Assistant",
   "description": "AI-powered commit messages, PR descriptions and code review via OpenRouter",
-  "version": "0.0.30",
+  "version": "0.0.31",
   "publisher": "PedroLouback",
   "author": {
     "name": "PedroLouback",
