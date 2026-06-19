@@ -5,7 +5,7 @@
 [![VS Code Marketplace](https://img.shields.io/badge/VS%20Code%20Marketplace-Install-blue?logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=PedroLouback.git-flare-assistant)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://github.com/PedroLouback/git-flare-assistant)
 [![License](https://img.shields.io/github/license/PedroLouback/git-flare-assistant)](https://github.com/PedroLouback/git-flare-assistant/blob/main/LICENSE)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/PedroLouback/git-flare-assistant/publish.yml?branch=main&logo=githubactions&label=Build)](https://github.com/PedroLouback/git-flare-assistant/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/PedroLouback/git-flare-assistant/publish.yml?branch=main&logo=githubactions&label=Build)](https://github.com/PedroLouback/git-flare-assistant/actions/workflows/release.yml)
 
 Generate commit messages, PR descriptions, and code reviews using free AI models via OpenRouter — directly in VS Code.
 
