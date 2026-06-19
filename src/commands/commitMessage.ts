@@ -86,55 +86,59 @@ await vscode.window.withProgress(
 			cancellable: false
 		},
     async () => {
-      let diff: string;
       try {
-        diff = await getStagedDiff(repoPath!);
-      } catch (err: any) {
-        vscode.window.showErrorMessage(`Failed to get staged changes: ${err.message}`);
-        return;
-      }
+        let diff: string;
+        try {
+          diff = await getStagedDiff(repoPath!);
+        } catch (err: any) {
+          vscode.window.showErrorMessage(`Failed to get staged changes: ${err.message}`);
+          return;
+        }
 
-      if (!diff || diff.length < 10) {
-        vscode.window.showWarningMessage(
-          `No staged changes found in ${repoName}. Stage your changes first.`
+        if (!diff || diff.length < 10) {
+          vscode.window.showWarningMessage(
+            `No staged changes found in ${repoName}. Stage your changes first.`
+          );
+          return;
+        }
+
+        const truncatedDiff = diff.slice(0, 8000);
+
+        const systemPrompt = config.language === 'pt-BR'
+          ? 'Gere APENAS uma linha de mensagem de commit no formato Conventional Commits. Exemplo: "feat(extension): add github cli integration for pr descriptions". NÃO escreva nada além da mensagem. APENAS a linha.'
+          : 'Generate ONLY one line of commit message in Conventional Commits format. Example: "feat(extension): add github cli integration for pr descriptions". Do NOT write anything beyond the message. ONLY the line.';
+
+        let commitMessage: string;
+        try {
+          commitMessage = await callOpenRouter({
+            apiKey: config.apiKey,
+            model: config.model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: truncatedDiff }
+            ],
+            maxTokens: 80,
+            temperature: 0.1
+          });
+          commitMessage = commitMessage.trim();
+          commitMessage = validateCommitMessage(commitMessage, config.language);
+        } catch (err: any) {
+          vscode.window.showErrorMessage(`OpenRouter API error: ${err.message}`);
+          return;
+        }
+
+        // Seta no input box do repositório correto
+        setCommitMessage(gitAPI, repoPath!, commitMessage);
+
+        const action = await vscode.window.showInformationMessage(
+          `✅ Commit message generated for ${repoName}!`,
+          'Copy'
         );
-        return;
-      }
-
-      const truncatedDiff = diff.slice(0, 8000);
-
-      const systemPrompt = config.language === 'pt-BR'
-        ? 'Gere APENAS uma linha de mensagem de commit no formato Conventional Commits. Exemplo: "feat(extension): add github cli integration for pr descriptions". NÃO escreva nada além da mensagem. APENAS a linha.'
-        : 'Generate ONLY one line of commit message in Conventional Commits format. Example: "feat(extension): add github cli integration for pr descriptions". Do NOT write anything beyond the message. ONLY the line.';
-
-      let commitMessage: string;
-      try {
-        commitMessage = await callOpenRouter({
-          apiKey: config.apiKey,
-          model: config.model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: truncatedDiff }
-          ],
-          maxTokens: 80,
-          temperature: 0.1
-        });
-        commitMessage = commitMessage.trim();
-        commitMessage = validateCommitMessage(commitMessage, config.language);
+        if (action === 'Copy') {
+          await vscode.env.clipboard.writeText(commitMessage);
+        }
       } catch (err: any) {
-        vscode.window.showErrorMessage(`OpenRouter API error: ${err.message}`);
-        return;
-      }
-
-      // Seta no input box do repositório correto
-      setCommitMessage(gitAPI, repoPath!, commitMessage);
-
-      const action = await vscode.window.showInformationMessage(
-        `✅ Commit message generated for ${repoName}!`,
-        'Copy'
-      );
-      if (action === 'Copy') {
-        await vscode.env.clipboard.writeText(commitMessage);
+        vscode.window.showErrorMessage(`Unexpected error: ${err.message}`);
       }
     }
   );
