@@ -1,15 +1,35 @@
 import * as vscode from 'vscode';
 import { execSync } from 'child_process';
 
-export function getWorkspaceRoot(): string {
-  const folders = vscode.workspace.workspaceFolders;
-  if (!folders || folders.length === 0) {
-    throw new Error('No workspace folder open in VS Code.');
+const ALLOWED_GIT_COMMANDS = [
+  'rev-parse --is-inside-work-tree',
+  'diff --staged',
+  'diff',
+  'log',
+  'rev-parse --abbrev-ref HEAD'
+];
+
+const ALLOWED_BASE_BRANCHES = ['main', 'master', 'develop'];
+
+function isAllowedGitCommand(command: string): boolean {
+  const baseCommand = command.trim().split(' ')[0];
+  if (!['rev-parse', 'diff', 'log'].includes(baseCommand)) {
+    return false;
   }
-  return folders[0].uri.fsPath;
+  return ALLOWED_GIT_COMMANDS.some(allowed => command.startsWith(allowed));
+}
+
+function hasPathTraversal(command: string): boolean {
+  return command.includes('../') || command.includes('..\\') || command.includes('../../');
 }
 
 function git(command: string, cwd: string): string {
+  if (!isAllowedGitCommand(command)) {
+    throw new Error(`Git command not allowed: ${command.split(' ')[0]}`);
+  }
+  if (hasPathTraversal(command)) {
+    throw new Error('Path traversal detected in git command');
+  }
   try {
     return execSync(`git ${command}`, {
       cwd,
@@ -22,6 +42,14 @@ function git(command: string, cwd: string): string {
     const stdout = err.stdout?.toString?.() ?? '';
     throw new Error(stderr || stdout || err.message);
   }
+}
+
+export function getWorkspaceRoot(): string {
+  const folders = vscode.workspace.workspaceFolders;
+  if (!folders || folders.length === 0) {
+    throw new Error('No workspace folder open in VS Code.');
+  }
+  return folders[0].uri.fsPath;
 }
 
 export function ensureGitRepo(cwd?: string): void {
@@ -61,6 +89,9 @@ export async function getCurrentBranch(cwd?: string): Promise<string> {
 }
 
 export async function getCommitLog(baseBranch: string, cwd?: string): Promise<string> {
+  if (!ALLOWED_BASE_BRANCHES.includes(baseBranch)) {
+    throw new Error(`Base branch not allowed: ${baseBranch}`);
+  }
   const root = cwd ?? getWorkspaceRoot();
   try {
     return git(`log ${baseBranch}..HEAD --oneline --no-merges`, root);
@@ -70,6 +101,9 @@ export async function getCommitLog(baseBranch: string, cwd?: string): Promise<st
 }
 
 export async function getPRDiff(baseBranch: string, cwd?: string): Promise<string> {
+  if (!ALLOWED_BASE_BRANCHES.includes(baseBranch)) {
+    throw new Error(`Base branch not allowed: ${baseBranch}`);
+  }
   const root = cwd ?? getWorkspaceRoot();
   try {
     const diff = git(`diff ${baseBranch}...HEAD`, root);
