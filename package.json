@@ -4,10 +4,6 @@
   "description": "AI-powered commit messages, PR descriptions and code review via OpenRouter",
   "version": "0.0.36",
   "publisher": "PedroLouback",
-  "author": {
-    "name": "PedroLouback",
-    "url": "https://github.com/PedroLouback"
-  },
   "license": "MIT",
   "icon": "icon.png",
   "repository": {
