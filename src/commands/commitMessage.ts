@@ -79,7 +79,7 @@ export async function generateCommitMessage(sourceControl?: vscode.SourceControl
 
   const repoName = path.basename(repoPath);
 
-await vscode.window.withProgress(
+const commitMessage = await vscode.window.withProgress<string | undefined>(
 		{
 			location: vscode.ProgressLocation.Notification,
 			title: `GitFlare: Generating commit message for ${repoName}...`,
@@ -115,7 +115,7 @@ await vscode.window.withProgress(
             model: config.model,
             messages: [
               { role: 'system', content: systemPrompt },
-              { role: 'user', content: truncatedDiff }
+              { role: 'user', content: `Analyze these code changes and generate a commit message:\n\n${truncatedDiff}` }
             ],
             maxTokens: 80,
             temperature: 0.1
@@ -127,52 +127,58 @@ await vscode.window.withProgress(
           return;
         }
 
-        // Seta no input box do repositório correto
         setCommitMessage(gitAPI, repoPath!, commitMessage);
-
-        const action = await vscode.window.showInformationMessage(
-          `✅ Commit message generated for ${repoName}!`,
-          'Copy'
-        );
-        if (action === 'Copy') {
-          await vscode.env.clipboard.writeText(commitMessage);
-        }
+        return commitMessage;
       } catch (err: any) {
         vscode.window.showErrorMessage(`Unexpected error: ${err.message}`);
       }
     }
   );
+
+  if (commitMessage) {
+    const action = await vscode.window.showInformationMessage(
+      `✅ Commit message generated for ${repoName}!`,
+      'Copy'
+    );
+    if (action === 'Copy') {
+      await vscode.env.clipboard.writeText(commitMessage);
+    }
+  }
 }
 
 function validateCommitMessage(message: string, language: 'en' | 'pt-BR'): string {
-  // Remove markdown headers, bullets, and common prefixes
   let cleaned = message
     .replace(/^#{1,6}\s*/g, '')
     .replace(/^[-*]\s*/g, '')
     .replace(/```/g, '')
-    .replace(/^Here.*commit.*message.*$/gim, '')
-    .replace(/^Example:?\s*/gi, '')
+    .replace(/^(here|aqui está|segue|sugestão|sugestao|suggestion)[^:]*:?\s*/gim, '')
+    .replace(/^(your\s+)?commit message:?\s*/gim, '')
+    .replace(/^(mensagem de commit|mensagem):?\s*/gim, '')
+    .replace(/^example:?\s*/gi, '')
     .replace(/^\s*"|"\s*$/g, '')
     .trim();
 
-  // Extract first line if multiline
-  cleaned = cleaned.split('\n')[0].trim();
+  const lines = cleaned.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const conventionalPattern = /^(feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(\([\w-]+\))?:\s*.+$/i;
 
-  // Ensure Conventional Commits format (type(scope): description or type: description)
+  const matchLine = lines.find(l => conventionalPattern.test(l));
+  if (matchLine) {
+    cleaned = matchLine;
+  } else {
+    cleaned = lines[0] || cleaned;
+  }
+
   const conventionalCommitPattern = /^(feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(\([\w-]+\))?:\s*.+$/;
   
   if (!conventionalCommitPattern.test(cleaned)) {
-    // Try to extract just the commit part from common patterns
     const match = cleaned.match(/^(feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(\([\w-]+\))?:\s*(.+)$/i);
     if (match) {
       cleaned = `${match[1]}${match[2] || ''}: ${match[3]}`;
     } else {
-      // Fallback: wrap in docs: if it looks like a description
       cleaned = `docs(extension): ${cleaned.toLowerCase().replace(/^changelog\./, '').replace(/\.$/, '')}`;
     }
   }
 
-  // Truncate to 72 chars max
   if (cleaned.length > 72) {
     cleaned = cleaned.substring(0, 72);
   }
