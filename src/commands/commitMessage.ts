@@ -123,7 +123,7 @@ const commitMessage = await vscode.window.withProgress<string | undefined>(
           commitMessage = commitMessage.trim();
           commitMessage = validateCommitMessage(commitMessage, config.language);
         } catch (err: any) {
-          vscode.window.showErrorMessage(`OpenRouter API error: ${err.message}`);
+          vscode.window.showErrorMessage(err.message);
           return;
         }
 
@@ -169,12 +169,25 @@ function validateCommitMessage(message: string, language: 'en' | 'pt-BR'): strin
   }
 
   const conventionalCommitPattern = /^(feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(\([\w-]+\))?:\s*.+$/;
-  
+
   if (!conventionalCommitPattern.test(cleaned)) {
     const match = cleaned.match(/^(feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(\([\w-]+\))?:\s*(.+)$/i);
     if (match) {
       cleaned = `${match[1]}${match[2] || ''}: ${match[3]}`;
     } else {
+      const metaPatterns = [
+        /we need to/i, /we should/i,
+        /generate a commit/i, /generating a commit/i,
+        /commit message for/i,
+        /sua mensagem de commit/i,
+        /precisa(mos)? (gerar|criar)/i,
+        /vou (gerar|criar)/i,
+      ];
+      if (metaPatterns.some(p => p.test(cleaned))) {
+        throw new Error(
+          `O modelo (${getConfig().model}) não gerou uma mensagem de commit válida. Resposta: "${message.trim().substring(0, 120)}". Tente configurar um modelo mais robusto em gitFlareAssistant.model.`
+        );
+      }
       cleaned = `docs(extension): ${cleaned.toLowerCase().replace(/^changelog\./, '').replace(/\.$/, '')}`;
     }
   }
