@@ -104,9 +104,9 @@ const commitMessage = await vscode.window.withProgress<string | undefined>(
 
         const truncatedDiff = diff.slice(0, 8000);
 
-        const systemPrompt = config.language === 'pt-BR'
-          ? 'Gere APENAS uma linha de mensagem de commit no formato Conventional Commits. Exemplo: "feat(extension): add github cli integration for pr descriptions". NÃO escreva nada além da mensagem. APENAS a linha.'
-          : 'Generate ONLY one line of commit message in Conventional Commits format. Example: "feat(extension): add github cli integration for pr descriptions". Do NOT write anything beyond the message. ONLY the line.';
+        const userPrompt = config.language === 'pt-BR'
+          ? `Gere uma mensagem de commit no formato Conventional Commits (tipo(escopo): descrição) para as alterações abaixo. Responda APENAS com a mensagem de commit, sem explicações.\n\nAlterações:\n${truncatedDiff}\n\nCommit:`
+          : `Generate a Conventional Commits commit message (type(scope): description) for the changes below. Reply with ONLY the commit message, no explanations.\n\nChanges:\n${truncatedDiff}\n\nCommit:`;
 
         let commitMessage: string;
         try {
@@ -114,10 +114,10 @@ const commitMessage = await vscode.window.withProgress<string | undefined>(
             apiKey: config.apiKey,
             model: config.model,
             messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: `Analyze these code changes and generate a commit message:\n\n${truncatedDiff}` }
+              { role: 'system', content: 'You are a software developer.' },
+              { role: 'user', content: userPrompt }
             ],
-            maxTokens: 80,
+            maxTokens: 200,
             temperature: 0.1
           });
           commitMessage = commitMessage.trim();
