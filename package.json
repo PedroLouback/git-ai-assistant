@@ -2,7 +2,7 @@
   "name": "git-flare-assistant",
   "displayName": "GitFlare Assistant",
   "description": "AI-powered commit messages, PR descriptions and code review via OpenRouter",
-  "version": "0.0.42",
+  "version": "0.1.0",
   "publisher": "PedroLouback",
   "license": "MIT",
   "icon": "icon.png",
@@ -39,6 +39,11 @@
         "command": "git-flare-assistant.reviewChanges",
         "title": "GitFlare: Review Changes",
         "category": "GitFlare"
+      },
+      {
+        "command": "git-flare-assistant.selectModel",
+        "title": "GitFlare: Select Model",
+        "category": "GitFlare"
       }
     ],
     "menus": {
@@ -66,6 +71,9 @@
         },
         {
           "command": "git-flare-assistant.reviewChanges"
+        },
+        {
+          "command": "git-flare-assistant.selectModel"
         }
       ]
     },
